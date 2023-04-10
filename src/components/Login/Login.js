@@ -15,60 +15,74 @@ const emailReducer = (state, action) => { /* A function in the useReducer for re
   return {value: "", isValid: false }; /* we return a new state here in the {}, and we put this in the useReducer as well below */
 }; /* uses the last state snapshot, and the action  */
 
+const passwordReducer = (state, action) => {
+  if (action.type === "USER_INPUT") {
+    return {value: action.val, isValid: action.val.trim().length > 6 };
+  }
+  if (action.type === "INPUT_BLUR"){
+    return {value: state.value, isValid: state.value.trim().length > 6 };
+  }
+  return {value: "", isValid: false };
+};
+
 const Login = (props) => {
   /* const [enteredEmail, setEnteredEmail] = useState('');
   const [emailIsValid, setEmailIsValid] = useState(); */
-  const [enteredPassword, setEnteredPassword] = useState('');
-  const [passwordIsValid, setPasswordIsValid] = useState();
+  /* const [enteredPassword, setEnteredPassword] = useState('');
+  const [passwordIsValid, setPasswordIsValid] = useState(); */
   const [formIsValid, setFormIsValid] = useState(false);
 
-  const [emailState, dispatchEmail] = useReducer(emailReducer, {value: "", isValid: false} ); /* our initial state here is the {} -therefore we can use the emailState in our code below */
+  const [emailState, dispatchEmail] = useReducer(emailReducer, {value: "", isValid: null} ); /* our initial state here is the {} -therefore we can use the emailState in our code below */
 
-  /* useEffect(() => {
-    const identifier = setTimeout(() => { /* with this we only check after 500ms 
+  const [passwordState, dispatchPassword] = useReducer(passwordReducer, {valuse: "", isValid: null});
+
+  useEffect(() => {
+    const identifier = setTimeout(() => { /* with this we only check after 500ms */
       setFormIsValid( 
-        enteredEmail.includes('@') && enteredPassword.trim().length > 6
+        emailState.isValid && passwordState.isValid
       );
     }, 500);
 
     return () => {
-      clearTimeout(identifier); /* Sooooo this cleans the timeout after every run. And solves that the useEffect function settimeout part doesnt run in the background only when you stop typing for 500ms lecture 113.
+      clearTimeout(identifier); /* Sooooo this cleans the timeout after every run. And solves that the useEffect function settimeout part doesnt run in the background only when you stop typing for 500ms lecture 113. */
     };
-  }, [enteredEmail, enteredPassword]); /* If we dont add depend. here, than it only runs once hence cant login. If we take out dependencies, than it runs every time, hence loop. So we add as dependencies what we are using az out sideeffect function */
+  }, [emailState, passwordState]); /* If we dont add depend. here, than it only runs once hence cant login. If we take out dependencies, than it runs every time, hence loop. So we add as dependencies what we are using az out sideeffect function */
                                                           /* And like this it reruns if the given stuff changes */
-      /* There was also setFormIsValid, but we could omit that, bec those state updating functions by default are insured by React to never change. */
+      /* There was also setFormIsValid, but we could omit that, bec those state updating functions by default are insured by React to never change.*/
   const emailChangeHandler = (event) => {
     /* setEnteredEmail(event.target.value); */
     dispatchEmail({type: "USER_INPUT", val: event.target.value}); /* Again it's "up to us",- whats inside the (), it can be a simple string a number or an object like here- but "it is convention". Why, why not, etc, who know max teaches everything very well, except when suddenly he doesn't tell shit, like here */
 
-    setFormIsValid( /* ORIGINALe */
-      event.target.value.includes('@') && enteredPassword.trim().length > 6
-    );
-  }; 
+    /* setFormIsValid( /* ORIGINALe
+      event.target.value.includes('@') && passwordState.isValid
+    );*/ 
+  };
 
   const passwordChangeHandler = (event) => {
-    setEnteredPassword(event.target.value);
+    /* setEnteredPassword(event.target.value); */
+    dispatchPassword({type: "USER_INPUT", val: event.target.value})
 
-    setFormIsValid( 
-      /* enteredEmail.includes("@") && event.target.value.trim().length > 6 -This was before the useReducer*/
-      emailState.isValid && event.target.value.trim().length > 6 /* Dunno what is happening. isValid check I understand the other part not so much. lecture 116. f..... */
-    ); 
+    /* setFormIsValid( 
+      enteredEmail.includes("@") && event.target.value.trim().length > 6 -This was before the useReducer
+      emailState.isValid && event.target.value.trim().length > 6  Dunno what is happening. isValid check I understand the other part not so much. lecture 116. f..... 
+    );  */
   };
 
   const validateEmailHandler = () => {
     /* setEmailIsValid(enteredEmail.includes('@')); -before useReducer*/
     /* setEmailIsValid(emailState.isValid); useReducer first edition */
-    dispatchEmail({ type: "INPUT_BLUR" /* AND we dont need to add here a value necceserily bec "all we care that the input lost focus""there is no extra data thet needs to be added" for what reason*/ });/* our stuf should be the same so this is the same as the stuff what was "up to us" before */
+    dispatchEmail({ type: "INPUT_BLUR"}); /* AND we dont need to add here a value neccesarily bec "all we care that the input lost focus""there is no extra data thet needs to be added" for what reason*//* our stuf should be the same so this is the same as the stuff what was "up to us" before */
   };
 
   const validatePasswordHandler = () => {
-    setPasswordIsValid(enteredPassword.trim().length > 6);
+    dispatchPassword({type: "INPUT_BLUR" });
+   /*  setPasswordIsValid(enteredPassword.trim().length > 6); */
   };
 
   const submitHandler = (event) => {
     event.preventDefault();
     /* props.onLogin(enteredEmail, enteredPassword); */
-    props.onLogin(emailState.value, enteredPassword);
+    props.onLogin(emailState.value, passwordState.value);
   };
 
   return (
@@ -90,14 +104,14 @@ const Login = (props) => {
         </div>
         <div
           className={`${classes.control} ${
-            passwordIsValid === false ? classes.invalid : ''
+            passwordState.isValid === false ? classes.invalid : '' /* passwordIsValid was */
           }`}
         >
           <label htmlFor="password">Password</label>
           <input
             type="password"
             id="password"
-            value={enteredPassword}
+            value={passwordState.value} /* value={enteredPassword} */
             onChange={passwordChangeHandler}
             onBlur={validatePasswordHandler}
           />
