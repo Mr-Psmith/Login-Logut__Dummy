@@ -36,17 +36,26 @@ const Login = (props) => {
 
   const [passwordState, dispatchPassword] = useReducer(passwordReducer, {valuse: "", isValid: null});
 
+  /*Our effect-the password lenght checker one- reexecutes even after the password reached its correct length. We can reach that it doesnt by: */
+  /* Using object destructuring-we are pulling out certain properties of objects */
+  /* const { isValid } = emailState; */ /* and we are storing it in a new constant of the same name */ 
+  /* here we would pull out the same named property from passwordState, and becouse of this we instead are using a variation of the destructuring */
+  const { isValid: emailIsValid } = emailState; /* so we pull out isValid, and we are storing it in a constant named emailIsValid */
+  const { isValid: passwordIsValid } = passwordState; /* This is called not a value, but an ALIAS-ASIGNMENT */
+  /* By pulling out these values, and not using the whole, we basically solved that after the check reacht the valid status it wont check */
+
   useEffect(() => {
     const identifier = setTimeout(() => { /* with this we only check after 500ms */
-      setFormIsValid( 
-        emailState.isValid && passwordState.isValid
+      setFormIsValid(
+        /* emailState.isValid && passwordState.isValid */
+        emailIsValid && passwordIsValid/* and we are using here the two pulled out alias-assigned values from above of the useEffect */
       );
     }, 500);
 
     return () => {
       clearTimeout(identifier); /* Sooooo this cleans the timeout after every run. And solves that the useEffect function settimeout part doesnt run in the background only when you stop typing for 500ms lecture 113. */
-    };
-  }, [emailState, passwordState]); /* If we dont add depend. here, than it only runs once hence cant login. If we take out dependencies, than it runs every time, hence loop. So we add as dependencies what we are using az out sideeffect function */
+    };                                      /* and we are using here the two pulled out alias-assigned values from above of the useEffect */
+  }, /* [emailState, passwordState]) */ [emailIsValid, passwordIsValid]); /* If we dont add depend. here, than it only runs once hence cant login. If we take out dependencies, than it runs every time, hence loop. So we add as dependencies what we are using az out sideeffect function */
                                                           /* And like this it reruns if the given stuff changes */
       /* There was also setFormIsValid, but we could omit that, bec those state updating functions by default are insured by React to never change.*/
   const emailChangeHandler = (event) => {
