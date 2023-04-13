@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useReducer } from 'react';
+import React, { useState, useEffect, useReducer, useContext } from 'react';
 
 import Card from '../UI/Card/Card';
 import classes from './Login.module.css';
 import Button from '../UI/Button/Button';
+import AuthContext from '../../context/auth-context';
 
   /* This is the useReducer()'s reducerFn taken out here  */
 const emailReducer = (state, action) => { /* A function in the useReducer for reducerFn. Can be created outside of the comp function, we can do this bec we wont need any data here from the Compfunction, react will use automaticlly everything when it is executed */
@@ -35,6 +36,8 @@ const Login = (props) => {
   const [emailState, dispatchEmail] = useReducer(emailReducer, {value: "", isValid: null} ); /* our initial state here is the {} -therefore we can use the emailState in our code below */
 
   const [passwordState, dispatchPassword] = useReducer(passwordReducer, {valuse: "", isValid: null});
+
+  const authCtx = useContext(AuthContext);
 
   /*Our effect-the password lenght checker one- reexecutes even after the password reached its correct length. We can reach that it doesnt by: */
   /* Using object destructuring-we are pulling out certain properties of objects */
@@ -91,7 +94,7 @@ const Login = (props) => {
   const submitHandler = (event) => {
     event.preventDefault();
     /* props.onLogin(enteredEmail, enteredPassword); */
-    props.onLogin(emailState.value, passwordState.value);
+    authCtx.onLogin(emailState.value, passwordState.value);
   };
 
   return (
